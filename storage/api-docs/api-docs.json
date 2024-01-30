@@ -1,0 +1,1799 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SH3 API Services",
+        "description": "API developed for SH3 backend",
+        "contact": {
+            "name": "Gabriel Meireles",
+            "email": "gabriel.meireles@sh3.com.br"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "description": "Authenticate a user and return a JWT token",
+                "operationId": "da8eb3a7b18eee27ae3eae965d6bf373",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "description": "JWT Token",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "description": "Create a new user and, if the user has the role 'support', associate a service area.",
+                "operationId": "f1d56483bf96e40c929f9d1d3d49c53f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "description": "User role (1=admin, 2=attendant, 3=support, 4=user)",
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "service_area": {
+                                        "description": "Service area for users with the 'support' role",
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "User details",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout the current authenticated user",
+                "description": "Invalidate the user session and log out.",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "302": {
+                        "description": "Redirects to the home page after successful logout",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User logged out successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getSupportList": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get all support users with their associated ticket services",
+                "operationId": "e336634b9737813bed5448ed70d6eeca",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "created_at": {
+                                            "description": "Timestamp of when the service was created",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Support users not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getAvailableSupport": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get all available support users",
+                "operationId": "d1d7456a5b5bcd37a71229c66b1e5a48",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "created_at": {
+                                            "description": "Timestamp of when the service was created",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No available support users found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/postService": {
+            "post": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Create a new service",
+                "description": "Create a new service with the specified details.",
+                "operationId": "7ca43a5677a313ee3e1a66c97051476d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "requester_name",
+                                    "client_id",
+                                    "service_area",
+                                    "support_id"
+                                ],
+                                "properties": {
+                                    "requester_name": {
+                                        "description": "Name of the requester",
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "client_id": {
+                                        "description": "ID of the client or ticket associated with the service",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "service_area": {
+                                        "description": "Service area description",
+                                        "type": "string",
+                                        "example": "Support"
+                                    },
+                                    "support_id": {
+                                        "description": "ID of the support user or analyst assigned to the service",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Service created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "created_at": {
+                                            "description": "Timestamp of when the service was created",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/putService": {
+            "put": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Update an existing service",
+                "description": "Update an existing service with the specified details.",
+                "operationId": "222fad1421c6812fb983be0d251a762d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "service_id",
+                                    "requester_name",
+                                    "client_id",
+                                    "service_area",
+                                    "support_id"
+                                ],
+                                "properties": {
+                                    "service_id": {
+                                        "description": "ID of the service to be updated",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "requester_name": {
+                                        "description": "Updated name of the requester",
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "client_id": {
+                                        "description": "Updated ID of the client or ticket associated with the service",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "service_area": {
+                                        "description": "Updated service area description",
+                                        "type": "string",
+                                        "example": "Support"
+                                    },
+                                    "support_id": {
+                                        "description": "Updated ID of the support user or analyst assigned to the service",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Service updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getServices": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get all services",
+                "description": "Retrieve a list of all services.",
+                "operationId": "d3b672ae84b00737d333e79d1853b74f",
+                "responses": {
+                    "200": {
+                        "description": "List of services",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Services not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getService": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get service by ID",
+                "description": "Retrieve a service by its ID.",
+                "operationId": "22612f160f3ac89accf1bcf6bb0c8ac8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID of the service to retrieve.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/deleteService": {
+            "delete": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Delete service by ID",
+                "description": "Delete a service by its ID.",
+                "operationId": "ca749a6329b4eeacb2d6a6c9bfa3199e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID of the service to delete.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service deleted successfully"
+                    },
+                    "404": {
+                        "description": "Service not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getServiceSupport": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Find services by support ID",
+                "description": "Find services associated with a specific support user by their support ID.",
+                "operationId": "fe76244a97c9b43e33ae2e8ca6cbba8b",
+                "parameters": [
+                    {
+                        "name": "support_id",
+                        "in": "query",
+                        "description": "ID of the support user.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Services found successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No services found for the specified support ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getServiceTicket": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Find services by ticket ID",
+                "description": "Find services associated with a specific ticket by its ID.",
+                "operationId": "95cd0eec49f680002625278f6c21f4e9",
+                "parameters": [
+                    {
+                        "name": "ticket_id",
+                        "in": "query",
+                        "description": "ID of the ticket.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Services found successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No services found for the specified ticket ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/putAssociateService": {
+            "put": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Associate a service with a support analyst",
+                "description": "Associate a service with a support analyst by setting the support_id. Only analysts with the matching service area can associate with the service.",
+                "operationId": "1147ac104765c94b44ecac81a27a5844",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID of the service.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service associated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Service already has an analyst or service area mismatch",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getServicesArea": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get unique service areas from all services",
+                "description": "Retrieve a list of unique service areas from all services.",
+                "operationId": "78979142b42483d26d95123c14d59724",
+                "responses": {
+                    "200": {
+                        "description": "List of unique service areas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service areas not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getServicesTypes": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get unique service types from all services",
+                "description": "Retrieve a list of unique service types from all services.",
+                "operationId": "c0a04bef6ccf808789f01b1b2bf022c4",
+                "responses": {
+                    "200": {
+                        "description": "List of unique service types",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service types not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getUnassociateServices": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get unassociated services",
+                "description": "Retrieve a list of services with no assigned support",
+                "operationId": "2f1ec9139d231565db9e5f49f5f7f6c8",
+                "responses": {
+                    "200": {
+                        "description": "List of unassociated services",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "requester_name": {
+                                                "description": "Updated name of the requester",
+                                                "type": "string"
+                                            },
+                                            "client_id": {
+                                                "description": "Updated ID of the client or ticket associated with the service",
+                                                "type": "integer"
+                                            },
+                                            "service_area": {
+                                                "description": "Updated service area description",
+                                                "type": "string"
+                                            },
+                                            "support_id": {
+                                                "description": "Updated ID of the support user or analyst assigned to the service",
+                                                "type": "integer"
+                                            },
+                                            "updated_at": {
+                                                "description": "Timestamp of when the service was last updated",
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unassociated services not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/putcompleteService": {
+            "put": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Complete a service",
+                "description": "Mark a service as completed by updating its status and service details",
+                "operationId": "80edc763d21377340370c3f5f1b3dce3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id",
+                                    "status",
+                                    "service"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "description": "Service ID",
+                                        "type": "integer"
+                                    },
+                                    "status": {
+                                        "description": "Service status (completed or not)",
+                                        "type": "boolean"
+                                    },
+                                    "service": {
+                                        "description": "Service details or completion notes",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Service updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Service not found or not belonging to the user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getIncompleteServices": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get incomplete services",
+                "operationId": "1a5a3428c11f30e532feb72bb75a360b",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No incomplete services found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/postTicket": {
+            "post": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Create a new ticket",
+                "description": "Create a new ticket with the provided details",
+                "operationId": "702dd649f84888ba0b63b472f31b741f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "client",
+                                    "occupation_area"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Ticket name",
+                                        "type": "string"
+                                    },
+                                    "client": {
+                                        "description": "Client name or identifier",
+                                        "type": "string"
+                                    },
+                                    "occupation_area": {
+                                        "description": "Occupation area of the ticket",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ticket created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Ticket Name"
+                                            },
+                                            "client": {
+                                                "type": "string",
+                                                "example": "Client Name"
+                                            },
+                                            "occupation_area": {
+                                                "type": "string",
+                                                "example": "Occupation Area"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/putTicket": {
+            "put": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Update a ticket",
+                "description": "Update the details of an existing ticket",
+                "operationId": "3c8d53822d6f01f4e66566196eb026d3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "client",
+                                    "occupation_area"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "description": "ID of the ticket to be updated",
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "description": "Updated ticket name",
+                                        "type": "string"
+                                    },
+                                    "client": {
+                                        "description": "Updated client name or identifier",
+                                        "type": "string"
+                                    },
+                                    "occupation_area": {
+                                        "description": "Updated occupation area of the ticket",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ticket updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Ticket Name"
+                                            },
+                                            "client": {
+                                                "type": "string",
+                                                "example": "Client Name"
+                                            },
+                                            "occupation_area": {
+                                                "type": "string",
+                                                "example": "Occupation Area"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getTickets": {
+            "get": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Get all tickets",
+                "description": "Retrieve a list of all tickets",
+                "operationId": "31ed28d3dc400b5fbec6c654ef219d4b",
+                "responses": {
+                    "200": {
+                        "description": "List of all tickets",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Ticket Name"
+                                            },
+                                            "client": {
+                                                "type": "string",
+                                                "example": "Client Name"
+                                            },
+                                            "occupation_area": {
+                                                "type": "string",
+                                                "example": "Occupation Area"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tickets not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getTicket": {
+            "get": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Get ticket by ID",
+                "description": "Retrieve a ticket by its ID",
+                "operationId": "89d76b40f80767eccb9d8c16c71e3e11",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ticket found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Ticket Name"
+                                        },
+                                        "client": {
+                                            "type": "string",
+                                            "example": "Client Name"
+                                        },
+                                        "occupation_area": {
+                                            "type": "string",
+                                            "example": "Occupation Area"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/deleteTicket": {
+            "delete": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Delete ticket by ID",
+                "description": "Delete a ticket by its ID",
+                "operationId": "be494f0a27020892a47bc68757cc7d80",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Ticket deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ticket deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ticket not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearer_token": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "Enter token in format (Bearer Token)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    }
+}
