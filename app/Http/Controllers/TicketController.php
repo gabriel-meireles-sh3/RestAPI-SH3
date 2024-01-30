@@ -276,8 +276,10 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::find($request->input('id'));
-        $ticket->delete();
-
-        return redirect('/');
+        if ($ticket) {
+            $ticket->delete();
+            return response()->json(['message' => 'Ticket deleted'], 200);
+        }
+        return response()->json(['message' => 'Ticket not found'], 404);
     }
 }
