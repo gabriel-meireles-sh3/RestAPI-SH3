@@ -282,4 +282,52 @@ class TicketController extends Controller
         }
         return response()->json(['message' => 'Ticket not found'], 404);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/restoreById",
+     *     summary="Restaurar um serviço excluído",
+     *     description="Restaura um serviço excluído com base no ID.",
+     *     tags={"Ticket"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="ID do serviço a ser restaurado",
+     *         @OA\JsonContent(
+     *             required={"id"},
+     *             @OA\Property(property="id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Sucesso ao restaurar o serviço",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Service restored successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Serviço não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Service not found")
+     *         )
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function restoreById(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:tickets,id',
+        ]);
+
+        $ticket = Ticket::withTrashed()->find($request->id);
+
+        if ($ticket) {
+            $ticket->restore();
+
+            return response()->json(['message' => 'Service restored successfully']);
+        }
+
+        return response()->json(['message' => 'Service not found'], 404);
+    }
 }

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('service_area');
             $table->foreignId('support_id')->nullable()->constrained('users')->default(null);            $table->boolean('status')->default(false);
             $table->string('service')->default('');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -265,13 +265,62 @@ class ServiceController extends Controller
         ]);
 
         $service = Service::find($request->input('id'));
-        if ($service){
+        if ($service) {
             $service->delete();
-            return response()->json(['message' => 'Service deleted'],200);
+            return response()->json(['message' => 'Service deleted'], 200);
         }
 
-        return response()->json(['message' => 'Service not found'],404);
+        return response()->json(['message' => 'Service not found'], 404);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/restoreById",
+     *     summary="Restaurar um serviço excluído",
+     *     description="Restaura um serviço excluído com base no ID.",
+     *     tags={"Service"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="ID do serviço a ser restaurado",
+     *         @OA\JsonContent(
+     *             required={"id"},
+     *             @OA\Property(property="id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Sucesso ao restaurar o serviço",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Service restored successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Serviço não encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Service not found")
+     *         )
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    public function restoreById(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:services,id',
+        ]);
+
+        $service = Service::withTrashed()->find($request->id);
+
+        if ($service) {
+            $service->restore();
+
+            return response()->json(['message' => 'Service restored successfully']);
+        }
+
+        return response()->json(['message' => 'Service not found'], 404);
+    }
+
 
     /**
      * @OA\Get(
@@ -646,7 +695,7 @@ class ServiceController extends Controller
         $response = $this->get('/api/getIncompleteServices');
 
         $response->assertStatus(200)
-            ->assertJsonCount(1) 
+            ->assertJsonCount(1)
             ->assertJsonMissing([$completedService->toArray()]);
     }
 }
