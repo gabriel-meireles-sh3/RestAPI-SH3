@@ -35,8 +35,8 @@ Route::middleware('api')->group(function () {
         Route::get('/getSupportList', [AuthController::class, 'findAllSupport'])->name('listSupport');
         Route::delete('/deleteTicket', [TicketController::class, 'deleteById'])->name('deleteTicket');
         Route::delete('/deleteService', [ServiceController::class, 'deleteById'])->name('deleteService');
-        Route::delete('/restoreTicket', [TicketController::class, 'restoreById'])->name('restoreTicket');
-        Route::delete('/restoreService', [ServiceController::class, 'restoreById'])->name('restoreService');
+        Route::post('/restoreTicket', [TicketController::class, 'restoreById'])->name('restoreTicket');
+        Route::post('/restoreService', [ServiceController::class, 'restoreById'])->name('restoreService');
         Route::put('/putService', [ServiceController::class, 'update'])->name('editService');
         Route::get('/getServicesAreas', [ServiceController::class, 'servicesArea'])->name('listServicesAreas');
         Route::get('/getServicesTypes', [ServiceController::class, 'servicesTypes'])->name('listServicesTypes');
