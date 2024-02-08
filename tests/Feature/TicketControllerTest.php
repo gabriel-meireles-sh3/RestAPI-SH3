@@ -13,6 +13,8 @@ class TicketControllerTest extends TestCase
     /**
      * A basic feature test example.
      */
+    use RefreshDatabase;
+
     public function testCreateTicket()
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
@@ -103,7 +105,7 @@ class TicketControllerTest extends TestCase
 
         $response = $this->actingAs($user)->deleteJson('/api/deleteTicket', ['id' => $ticket->id]);
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('tickets', ['id' => $ticket->id]);
+        $this->assertSoftDeleted('tickets', ['id' => $ticket->id]);
     }
 
     public function testDeleteTicketByInvalidId()
@@ -113,5 +115,20 @@ class TicketControllerTest extends TestCase
         $response = $this->actingAs($user)->deleteJson('/api/deleteTicket', ['id' => 999]);
         $response->assertStatus(404);
         $response->assertJson(['message' => 'Ticket not found']);
+    }
+
+    public function testRestoreTicketById()
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $ticket = Ticket::factory()->create();
+        $id = $ticket->id;
+        $ticket->delete();
+
+        $response = $this->actingAs($user)->post('/api/restoreTicket', ['id' => $id]);
+
+        $response->assertStatus(200);  
+        $restoredTicket = Ticket::withTrashed()->find($ticket->id);
+        $this->assertNotNull($restoredTicket);
+        $this->assertNull($restoredTicket->deleted_at);
     }
 }

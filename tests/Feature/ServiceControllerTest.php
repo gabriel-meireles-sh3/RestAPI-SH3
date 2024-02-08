@@ -24,7 +24,7 @@ class ServiceControllerTest extends TestCase
     public function testCreateService()
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
-        User::factory()->create(['role' => User::ROLE_SUPPORT]);       
+        User::factory()->create(['role' => User::ROLE_SUPPORT]);
         Ticket::factory()->create();
         $service = Service::factory()->create();
 
@@ -95,7 +95,7 @@ class ServiceControllerTest extends TestCase
         Service::factory()->create();
 
         $response = $this->actingAs($user)->get('/api/getServices');
-        
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             '*' => [
@@ -133,8 +133,23 @@ class ServiceControllerTest extends TestCase
         $response = $this->actingAs($user)->delete('/api/deleteService?id=' . $service->id);
 
         $response->assertStatus(200);
-        $deletedService = Service::find($service->id);
-        $this->assertNull($deletedService);
+        $this->assertSoftDeleted('services', ['id' => $service->id]);
+    }
+
+    public function testRestoreServiceById()
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        Ticket::factory()->create();
+        $service = Service::factory()->create();
+        $id = $service->id;
+        $service->delete();
+
+        $response = $this->actingAs($user)->post('/api/restoreService', ['id' => $id]);
+
+        $response->assertStatus(200);  
+        $restoredService = Service::withTrashed()->find($service->id);
+        $this->assertNotNull($restoredService);
+        $this->assertNull($restoredService->deleted_at);
     }
 
     public function testFindServiceBySupportId()
@@ -199,9 +214,10 @@ class ServiceControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $serviceAreas = ['Support', 'Maintenance', 'Consulting'];
+        $ticket = Ticket::factory()->create();
 
         foreach ($serviceAreas as $area) {
-            Service::factory()->create(['service_area' => $area]);
+            Service::factory()->create(['service_area' => $area, 'client_id' => $ticket->id]);
         }
 
         $response = $this->actingAs($user)->get('/api/getServicesAreas');
@@ -215,10 +231,11 @@ class ServiceControllerTest extends TestCase
     public function testGetServiceTypes()
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
-        $serviceTypes= ['TypeA', 'TypeB', 'TypeC'];
+        $serviceTypes = ['TypeA', 'TypeB', 'TypeC'];
+        $ticket = Ticket::factory()->create();
 
         foreach ($serviceTypes as $area) {
-            Service::factory()->create(['service' => $area]);
+            Service::factory()->create(['service' => $area, 'client_id' => $ticket->id]);
         }
 
         $response = $this->actingAs($user)->get('/api/getServicesTypes');
@@ -232,8 +249,10 @@ class ServiceControllerTest extends TestCase
     public function testUnassociateServices()
     {
         $user = User::factory()->create(['role' => User::ROLE_SUPPORT]);
-        $serviceWithSupport = Service::factory()->create(['support_id' => $user->id]);
-        $serviceWithoutSupport = Service::factory()->create(['support_id' => NULL]);
+        $ticket = Ticket::factory()->create();
+
+        $serviceWithSupport = Service::factory()->create(['support_id' => $user->id, 'client_id' => $ticket->id]);
+        $serviceWithoutSupport = Service::factory()->create(['support_id' => NULL, 'client_id' => $ticket->id]);
 
         $response = $this->actingAs($user)->get('/api/getUnassociateServices');
         $response->assertStatus(200)
@@ -245,7 +264,8 @@ class ServiceControllerTest extends TestCase
     public function testCompleteService()
     {
         $user = User::factory()->create(['role' => User::ROLE_SUPPORT]);
-        $service = Service::factory()->create(['support_id' => $user->id]);
+        $ticket = Ticket::factory()->create();
+        $service = Service::factory()->create(['support_id' => $user->id, 'client_id' => $ticket->id]);
 
         $response = $this->actingAs($user)->put('/api/putcompleteService', [
             'id' => $service->id,
