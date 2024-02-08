@@ -122,12 +122,12 @@ class ServiceController extends Controller
             'requester_name' => 'required',
             'client_id' => 'required',
             'service_area' => 'required',
-            'support_id' => 'required',
+            'support_id' => 'nullable',
         ]);
 
         $service = Service::find($request->input('service_id'));
 
-        if ($service) {
+        if ($service && !$service->deleted_at !== NULL) {
             $service->requester_name = $request->input('requester_name');
             $service->client_id = $request->input('client_id');
             $service->service_area = $request->input('service_area');
@@ -171,10 +171,6 @@ class ServiceController extends Controller
     public function findAll()
     {
         $services = Service::all();
-
-        DB::listen(function ($query) {
-            Log::info($query->sql, $query->bindings, $query->time);
-        });
 
         if ($services) {
             return $services;
@@ -685,17 +681,5 @@ class ServiceController extends Controller
         return response()->json([
             'message' => 'No incomplete Services found'
         ], 404);
-    }
-
-    public function testIncompleteServices()
-    {
-        $completedService = Service::factory()->create(['status' => true]);
-        Service::factory()->create(['status' => false]);
-
-        $response = $this->get('/api/getIncompleteServices');
-
-        $response->assertStatus(200)
-            ->assertJsonCount(1)
-            ->assertJsonMissing([$completedService->toArray()]);
     }
 }
