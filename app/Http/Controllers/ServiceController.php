@@ -315,7 +315,7 @@ class ServiceController extends Controller
         if ($service) {
             $service->restore();
 
-            return response()->json(['message' => 'Service restored successfully']);
+            return response()->json(['message' => 'Service restored successfully'], 200);
         }
 
         return response()->json(['message' => 'Service not found'], 404);

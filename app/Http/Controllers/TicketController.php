@@ -325,7 +325,7 @@ class TicketController extends Controller
         if ($ticket) {
             $ticket->restore();
 
-            return response()->json(['message' => 'Service restored successfully']);
+            return response()->json(['message' => 'Service restored successfully'],200);
         }
 
         return response()->json(['message' => 'Service not found'], 404);
