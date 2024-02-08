@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+
 
 use App\Models\Ticket;
+use Illuminate\Support\Facades\Validator as Validator;
+
 
 class TicketController extends Controller
 {
@@ -54,11 +55,15 @@ class TicketController extends Controller
 
     public function create(Request $request)
     { // create ticket
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required',
             'client' => 'required',
             'occupation_area' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 422);
+        }
 
         $ticket = Ticket::create([
             'name' => $request->input('name'),
@@ -120,12 +125,16 @@ class TicketController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id' => 'required',
             'name' => 'required',
             'client' => 'required',
             'occupation_area' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 422);
+        }
 
         $ticket = Ticket::find($request->input('id'));
 
@@ -176,11 +185,6 @@ class TicketController extends Controller
     public function findAll()
     {
         $ticket = Ticket::all();
-
-
-        DB::listen(function ($query) {
-            Log::info($query->sql, $query->bindings, $query->time);
-        });
 
         if ($ticket) {
             return $ticket;
