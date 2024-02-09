@@ -40,7 +40,8 @@ Route::middleware('api')->group(function () {
         Route::put('/putService', [ServiceController::class, 'update'])->name('editService');
         Route::get('/getServicesAreas', [ServiceController::class, 'servicesArea'])->name('listServicesAreas');
         Route::get('/getServicesTypes', [ServiceController::class, 'servicesTypes'])->name('listServicesTypes');
-        Route::get('/getIncompleteServices', [ServiceController::class, 'incompleteServices'])->name('listIncompleteServices');
+        Route::get('/getIncompletedServices', [ServiceController::class, 'incompletedServices'])->name('listIncompletedServices');
+        Route::get('/getCompletedServices', [ServiceController::class, 'completedServices'])->name('listCompletedServices');
     });
 
     // ATTENDANT ROTES
