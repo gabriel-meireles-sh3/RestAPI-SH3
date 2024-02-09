@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Service;
 use App\Models\ServiceAreas;
+use App\Models\Support;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -17,7 +18,7 @@ class ServiceControllerTest extends TestCase
      * A basic feature test example.
      */
 
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     use WithFaker;
 
@@ -25,6 +26,7 @@ class ServiceControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
         User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        Support::factory()->create();
         Ticket::factory()->create();
         $service = Service::factory()->create();
 
@@ -56,11 +58,12 @@ class ServiceControllerTest extends TestCase
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
         User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        Support::factory()->create();
         Ticket::factory()->create();
         $service = Service::factory()->create();
 
         $clientIds = Ticket::pluck('id')->toArray();
-        $supportIds = User::where('role', User::ROLE_SUPPORT)->pluck('id')->toArray();
+        $supportIds = Support::pluck('id')->toArray();
 
         $response = $this->actingAs($user)->putJson('/api/putService', [
             'service_id' => $service->id,
@@ -155,10 +158,11 @@ class ServiceControllerTest extends TestCase
     public function testFindServiceBySupportId()
     {
         $supportUser = User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        $support = Support::factory()->create();
         Ticket::factory()->create();
-        $services = Service::factory(3)->create(['support_id' => $supportUser->id]);
+        $services = Service::factory(3)->create(['support_id' => $support->id]);
 
-        $response = $this->actingAs($supportUser)->get('/api/getServiceSupport?support_id=' . $supportUser->id);
+        $response = $this->actingAs($supportUser)->get('/api/getServiceSupport?support_id=' . $support->id);
 
         $response->assertStatus(200);
         foreach ($services as $service) {
@@ -194,8 +198,8 @@ class ServiceControllerTest extends TestCase
     {
         $supportUser = User::factory()->create(['role' => User::ROLE_SUPPORT]);
         Ticket::factory()->create();
-        $service = Service::factory()->create(['support_id' => NULL, "service_area" => "service"]);
-        ServiceAreas::factory()->create(['user_id' => $supportUser->id, 'service_area' => $service->service_area]);
+        $support = Support::factory()->create(['user_id' => $supportUser->id, 'service_area' => "service"]);
+        $service = Service::factory()->create(['support_id' => NULL, "service_area" => $support->service_area]);
 
         $response = $this->actingAs($supportUser)->put('/api/putAssociateService?id=' . $service->id);
 
@@ -204,10 +208,10 @@ class ServiceControllerTest extends TestCase
             'requester_name' => $service->requester_name,
             'client_id' => $service->client_id,
             'service_area' => $service->service_area,
-            'support_id' => $supportUser->id,
+            'support_id' => $support->id,
         ]);
 
-        $this->assertEquals($supportUser->id, $service->fresh()->support_id);
+        $this->assertEquals($support->id, $service->fresh()->support_id);
     }
 
     public function testGetServiceAreas()
@@ -249,9 +253,10 @@ class ServiceControllerTest extends TestCase
     public function testUnassociateServices()
     {
         $user = User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        $support = Support::factory()->create();
         $ticket = Ticket::factory()->create();
 
-        $serviceWithSupport = Service::factory()->create(['support_id' => $user->id, 'client_id' => $ticket->id]);
+        $serviceWithSupport = Service::factory()->create(['support_id' => $support->id, 'client_id' => $ticket->id]);
         $serviceWithoutSupport = Service::factory()->create(['support_id' => NULL, 'client_id' => $ticket->id]);
 
         $response = $this->actingAs($user)->get('/api/getUnassociateServices');
@@ -264,8 +269,9 @@ class ServiceControllerTest extends TestCase
     public function testCompleteService()
     {
         $user = User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        $support = Support::factory()->create();
         $ticket = Ticket::factory()->create();
-        $service = Service::factory()->create(['support_id' => $user->id, 'client_id' => $ticket->id]);
+        $service = Service::factory()->create(['support_id' => $support->id, 'client_id' => $ticket->id]);
 
         $response = $this->actingAs($user)->put('/api/putcompleteService', [
             'id' => $service->id,
@@ -284,5 +290,53 @@ class ServiceControllerTest extends TestCase
             'status' => true,
             'service' => 'Service completed successfully.'
         ]);
+    }
+
+    public function testIncompletedServices()
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        Ticket::factory()->create();
+        Service::factory()->count(3)->create(['status' => false]);
+
+        $response = $this->actingAs($user)->get('/api/getIncompletedServices');
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'requester_name',
+                'client_id',
+                'service_area',
+                'support_id',
+                'status',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+        $response->assertJsonCount(3);
+    }
+
+    public function testCompletedServices()
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        Ticket::factory()->create();
+        Service::factory()->count(3)->create(['status' => true]);
+
+        $response = $this->actingAs($user)->get('/api/getCompletedServices');
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'requester_name',
+                'client_id',
+                'service_area',
+                'support_id',
+                'status',
+                'created_at',
+                'updated_at',
+            ],
+        ]);
+        $response->assertJsonCount(3);
     }
 }

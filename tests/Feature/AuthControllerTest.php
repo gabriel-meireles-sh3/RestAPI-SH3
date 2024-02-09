@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Service;
+use App\Models\Support;
 use App\Models\Ticket;
 use Tymon\JWTAuth\Support\RefreshFlow;
 
@@ -16,8 +17,7 @@ class AuthControllerTest extends TestCase
      * A basic feature test example.
      */
 
-    use DatabaseTransactions;
-    //use RefreshDatabase;
+    use RefreshDatabase;
 
     public function testSignInWithValidCredentials()
     {
@@ -99,16 +99,25 @@ class AuthControllerTest extends TestCase
                 'role',
                 'created_at',
                 'updated_at',
-                'ticket_services' => [
+                'support' => [
                     '*' => [
                         'id',
-                        'requester_name',
-                        'client_id',
+                        'user_id',
                         'service_area',
-                        'support_id',
-                        'status',
                         'created_at',
                         'updated_at',
+                        'ticket_services' => [
+                            '*' => [
+                                'id',
+                                'requester_name',
+                                'client_id',
+                                'service_area',
+                                'support_id',
+                                'status',
+                                'created_at',
+                                'updated_at',
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -118,6 +127,8 @@ class AuthControllerTest extends TestCase
     public function testFindAvailableSupportWithNoAvailableSupport()
     {      
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $supportUser = User::factory()->create(['role' => User::ROLE_SUPPORT]);
+        Support::factory()->create(['user_id' => $supportUser->id]);
         Ticket::factory()->create();
         Service::factory()->create(['status' => false]);
 
