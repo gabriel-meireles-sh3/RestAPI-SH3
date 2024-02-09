@@ -29,15 +29,15 @@ class Service extends Model
         'service' => '',
     ];
 
-    protected $with = ['user'];
+    protected $with = ['support'];
 
     public function ticket()
     {
         return $this->belongsTo(Ticket::class, 'client_id', 'id');
     }
 
-    public function user()
+    public function support()
     {
-        return $this->belongsTo(User::class, 'support_id');
+        return $this->belongsTo(Support::class, 'support_id');
     }
 }
