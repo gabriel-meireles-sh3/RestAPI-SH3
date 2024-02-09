@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
-use App\Models\ServiceAreas;
-
+use App\Models\Support;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -126,7 +124,7 @@ class AuthController extends Controller
             }
 
             // Criando a área de atendimento do analista de suporte
-            $newServiceArea = ServiceAreas::create([
+            $newServiceArea = Support::create([
                 'user_id' => $user->id,
                 'service_area' => $request->input("service_area"),
             ]);
@@ -192,11 +190,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     { // logout
-        
+
         Auth::logout();
 
         return response()->json(
-            ['message' => "Logout Sucess"], 302
+            ['message' => "Logout Sucess"],
+            302
         );
     }
 
@@ -236,7 +235,7 @@ class AuthController extends Controller
         $users = User::where('role', User::ROLE_SUPPORT)->get();
 
         if ($users && count($users) > 0) {
-            $users->load('ticket_services');
+            $users->load('support.ticket_services');
             return $users;
         }
 
@@ -281,10 +280,12 @@ class AuthController extends Controller
         $users = User::where('role', User::ROLE_SUPPORT)->get();
 
         if ($users && count($users) > 0) {
-            $users->load('ticket_services');
+            $users->load('support.ticket_services');
 
             $availableSupportUsers = $users->reject(function ($user) {
-                return $user->ticket_services->contains('status', false);
+                return $user->support->contains(function ($support) {
+                    return $support->ticket_services->contains('status', false);
+                });
             });
 
             if ($availableSupportUsers->isNotEmpty()) {

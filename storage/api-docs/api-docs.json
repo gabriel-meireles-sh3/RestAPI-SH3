@@ -780,6 +780,75 @@
                 ]
             }
         },
+        "/restoreServiceById": {
+            "post": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Restaurar um serviço excluído",
+                "description": "Restaura um serviço excluído com base no ID.",
+                "operationId": "f139deb773f3e243c98711de18544a00",
+                "requestBody": {
+                    "description": "ID do serviço a ser restaurado",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sucesso ao restaurar o serviço",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service restored successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Serviço não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/getServiceSupport": {
             "get": {
                 "tags": [
@@ -1027,14 +1096,14 @@
                 ]
             }
         },
-        "/api/getServicesArea": {
+        "/api/getServicesAreas": {
             "get": {
                 "tags": [
                     "Service"
                 ],
                 "summary": "Get unique service areas from all services",
                 "description": "Retrieve a list of unique service areas from all services.",
-                "operationId": "78979142b42483d26d95123c14d59724",
+                "operationId": "4a9464b1615bc20cc38e76426429ac0f",
                 "responses": {
                     "200": {
                         "description": "List of unique service areas",
@@ -1283,13 +1352,13 @@
                 ]
             }
         },
-        "/api/getIncompleteServices": {
+        "/api/getIncompletedServices": {
             "get": {
                 "tags": [
                     "Service"
                 ],
                 "summary": "Get incomplete services",
-                "operationId": "1a5a3428c11f30e532feb72bb75a360b",
+                "operationId": "42b0af972d52eaa0290795ffa1518600",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -1326,6 +1395,70 @@
                     },
                     "404": {
                         "description": "No incomplete services found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/api/getcompletedServices": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Get complete services",
+                "operationId": "94ff6df90497c87d187a12e7b753eea9",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requester_name": {
+                                            "description": "Updated name of the requester",
+                                            "type": "string"
+                                        },
+                                        "client_id": {
+                                            "description": "Updated ID of the client or ticket associated with the service",
+                                            "type": "integer"
+                                        },
+                                        "service_area": {
+                                            "description": "Updated service area description",
+                                            "type": "string"
+                                        },
+                                        "support_id": {
+                                            "description": "Updated ID of the support user or analyst assigned to the service",
+                                            "type": "integer"
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of when the service was last updated",
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No complete services found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1780,6 +1913,72 @@
                 "security": [
                     {
                         "bearer_token": []
+                    }
+                ]
+            }
+        },
+        "/restoreTicketById": {
+            "post": {
+                "tags": [
+                    "Ticket"
+                ],
+                "summary": "Restaurar um ticket excluído",
+                "description": "Restaura um ticket excluído com base no ID.",
+                "operationId": "8afefa5dfdb03e0b10717027a9787c53",
+                "requestBody": {
+                    "description": "ID do ticket a ser restaurado",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sucesso ao restaurar o ticket",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service restored successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }

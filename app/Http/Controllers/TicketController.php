@@ -289,35 +289,35 @@ class TicketController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/restoreById",
-     *     summary="Restaurar um serviço excluído",
-     *     description="Restaura um serviço excluído com base no ID.",
+     *     path="/restoreTicketById",
+     *     summary="Restaurar um ticket excluído",
+     *     description="Restaura um ticket excluído com base no ID.",
      *     tags={"Ticket"},
      *     @OA\RequestBody(
      *         required=true,
-     *         description="ID do serviço a ser restaurado",
+     *         description="ID do ticket a ser restaurado",
      *         @OA\JsonContent(
-     *             required={"id"},
      *             @OA\Property(property="id", type="integer", example=1)
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Sucesso ao restaurar o serviço",
+     *         description="Sucesso ao restaurar o ticket",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Service restored successfully")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Serviço não encontrado",
+     *         description="Ticket não encontrado",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Service not found")
      *         )
      *     ),
-     *     security={{"bearerAuth":{}}}
+     *     security={{"bearerAuth": {}}}
      * )
      */
+
     public function restoreById(Request $request)
     {
         $request->validate([
@@ -329,7 +329,7 @@ class TicketController extends Controller
         if ($ticket) {
             $ticket->restore();
 
-            return response()->json(['message' => 'Service restored successfully'],200);
+            return response()->json(['message' => 'Service restored successfully'], 200);
         }
 
         return response()->json(['message' => 'Service not found'], 404);

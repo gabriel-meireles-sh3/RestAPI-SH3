@@ -271,7 +271,7 @@ class ServiceController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/restoreById",
+     *     path="/restoreServiceById",
      *     summary="Restaurar um serviço excluído",
      *     description="Restaura um serviço excluído com base no ID.",
      *     tags={"Service"},
@@ -458,23 +458,31 @@ class ServiceController extends Controller
         ]);
 
         $service = Service::find($request->input('id'));
-        $support_area = $request->user()->service_areas->pluck('service_area');
+        $user = $request->user();
 
-        if ($service->support_id === NULL && $support_area->contains($service->service_area)) {
-            $service->support_id = $request->user()->id;
+        // Retrieve all support records for the user
+        $supports = $user->support;
+
+        $matchingSupport = $supports->first(function ($support) use ($service) {
+            return $support->service_area === $service->service_area;
+        });
+
+        // If a matching support is found, associate the service with that support
+        if ($matchingSupport) {
+            $service->support_id = $matchingSupport->id;
             $service->save();
 
             return $service;
         }
 
         return response()->json([
-            'message' => 'There is already an analyst responding to this service or the service area dont match'
+            'message' => 'There is already an analyst responding to this service or the service area does not match any support.'
         ]);
     }
 
     /**
      * @OA\Get(
-     *     path="/api/getServicesArea",
+     *     path="/api/getServicesAreas",
      *     summary="Get unique service areas from all services",
      *     tags={"Service"},
      *     security={{"bearer_token":{}}},
@@ -630,8 +638,13 @@ class ServiceController extends Controller
         ]);
 
         $service = Service::find($request->input('id'));
+        $supports = $request->user()->support;
 
-        if ($service && $service->support_id === $request->user()->id) {
+        $matchingSupport = $supports->first(function ($support) use ($service) {
+            return $support->id === $service->support_id;
+        });
+
+        if ($service && $matchingSupport) {
             $service->status = $request->input('status');
             $service->service = $request->input('service');
 
@@ -644,7 +657,7 @@ class ServiceController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/getIncompleteServices",
+     *     path="/api/getIncompletedServices",
      *     summary="Get incomplete services",
      *     tags={"Service"},
      *     security={{"bearer_token":{}}},
@@ -670,7 +683,7 @@ class ServiceController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function incompleteServices(Request $request)
+    public function incompletedServices(Request $request)
     {
         $services = Service::where('status', false)->get();
 
@@ -680,6 +693,47 @@ class ServiceController extends Controller
 
         return response()->json([
             'message' => 'No incomplete Services found'
+        ], 404);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/getcompletedServices",
+     *     summary="Get complete services",
+     *     tags={"Service"},
+     *     security={{"bearer_token":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="requester_name", type="string", description="Updated name of the requester"),
+     *             @OA\Property(property="client_id", type="integer", description="Updated ID of the client or ticket associated with the service"),
+     *             @OA\Property(property="service_area", type="string", description="Updated service area description"),
+     *             @OA\Property(property="support_id", type="integer", description="Updated ID of the support user or analyst assigned to the service"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of when the service was last updated"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No complete services found",
+     *         @OA\JsonContent(type="object", @OA\Property(property="message", type="string"))
+     *     ),
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function completedServices(Request $request)
+    {
+        $services = Service::where('status', true)->get();
+
+        if ($services && count($services) > 0) {
+            return $services;
+        }
+
+        return response()->json([
+            'message' => 'No completed Services found'
         ], 404);
     }
 }
