@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id');
             $table->foreign('client_id')->references('id')->on('tickets');
             $table->string('service_area');
-            $table->foreignId('support_id')->nullable()->constrained('users')->default(null);            $table->boolean('status')->default(false);
+            $table->foreignId('support_id')->nullable()->constrained('supports')->default(null);            $table->boolean('status')->default(false);
             $table->string('service')->default('');
             $table->softDeletes();
             $table->timestamps();

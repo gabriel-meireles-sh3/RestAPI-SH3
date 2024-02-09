@@ -5,7 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\Service;
-use App\Models\ServiceAreas;
+use App\Models\Support;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -19,13 +19,13 @@ class DatabaseSeeder extends Seeder
     {
         User::factory()->create([
             'email' => "teste@gmail.com",
-            'senha' => "123456",
+            'password' => "123456",
         ]);
         User::factory(10)->create();
         $user = User::factory()->create(['role' => User::ROLE_SUPPORT]);
-        $serviceArea = ServiceAreas::factory()->create(['user_id' => $user->id]);
+        $serviceArea = Support::factory()->create(['user_id' => $user->id]);
 
-        ServiceAreas::factory(10)->create();
+        Support::factory(10)->create();
         Ticket::factory(10)->create();
 
         Service::factory(10)->create();
