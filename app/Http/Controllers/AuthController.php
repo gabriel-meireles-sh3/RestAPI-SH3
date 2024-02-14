@@ -54,10 +54,22 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
         if ($token = auth()->attempt($credentials)) {
             // Sucesso na autenticação
-            return response()->json(['token' => $token], 200);
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'token' => $token,
+                ],
+                200
+            );
         }
 
-        return response()->json(['error' => 'Invalid credentials'], 401);
+        return response()->json(
+            [
+                'sucess' => false,
+                'error' => 'Invalid credentials, email or password incorrect.'
+            ],
+            401
+        );
     }
 
     /**
@@ -133,25 +145,41 @@ class AuthController extends Controller
                 // Sucesso
                 DB::commit();
                 return response()->json(
-                    ['message' => $user]
+                    [
+                        'sucess' => true,
+                        'data' => $user
+                    ],
+                    200
                 );
             } else {
                 // Falhou, desfaz as alterações no banco de dados
                 DB::rollBack();
                 return response()->json(
-                    ['message' => "Create Error"]
+                    [
+                        'sucess' => false,
+                        'message' => "Create Error"
+                    ],
+                    400
                 );
             }
         } else if ($user) { // usuário não analista de suporte
             // Criado, então sucesso
             DB::commit();
             return response()->json(
-                ['message' => $user]
+                [
+                    'sucess' => true,
+                    'data' => $user
+                ],
+                201
             );
         } else {
             // Qualquer outro, erro de criação
             return response()->json(
-                ['message' => "Create Error"]
+                [
+                    'sucess' => false,
+                    'message' => "Create Error"
+                ],
+                400
             );
         }
     }
@@ -196,7 +224,10 @@ class AuthController extends Controller
         Auth::logout();
 
         return response()->json(
-            ['message' => "Logout Sucess"],
+            [
+                'sucess' => true,
+                'message' => "Logout Sucess"
+            ],
             302
         );
     }
@@ -240,13 +271,23 @@ class AuthController extends Controller
         if ($users && count($users) > 0) {
             // Carregando seus serviços
             $users->load('support.ticket_services');
-            return $users;
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'data' => $users,
+                ],
+                302
+            );
         }
 
         // Mensagem de Erro
-        return response()->json([
-            'message' => 'Support users not found'
-        ], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Support users not found'
+            ],
+            404
+        );
     }
 
     /**
@@ -297,13 +338,23 @@ class AuthController extends Controller
 
             // Retornando a lista se não vazia
             if ($availableSupportUsers->isNotEmpty()) {
-                return $availableSupportUsers;
+                return response()->json(
+                    [
+                        'sucess' => true,
+                        'data' => $availableSupportUsers,
+                    ],
+                    302
+                );
             }
         }
 
         // Mensagem de erro
-        return response()->json([
-            'message' => 'No available support analyst'
-        ], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'No available support analyst'
+            ],
+            404
+        );
     }
 }

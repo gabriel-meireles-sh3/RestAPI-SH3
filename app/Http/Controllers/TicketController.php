@@ -73,7 +73,13 @@ class TicketController extends Controller
             'occupation_area' => $request->input('occupation_area'),
         ]);
 
-        return $ticket;
+        return response()->json(
+            [
+                'sucess' => true,
+                'data' => $ticket,
+            ],
+            200
+        );
     }
 
     /**
@@ -126,7 +132,7 @@ class TicketController extends Controller
      */
 
     public function update(Request $request)
-    {// Editando um Ticket
+    { // Editando um Ticket
         // Validando o input da requisição
         $validator = Validator::make($request->all(), [
             'id' => 'required',
@@ -149,11 +155,23 @@ class TicketController extends Controller
             $ticket->occupation_area = $request->input('occupation_area');
 
             $ticket->save();
-            return $ticket;
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'data' => $ticket,
+                ],
+                200
+            );
         }
 
         // Mensagem de erro
-        return response()->json(['message' => 'Ticket not found'], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Ticket not found'
+            ],
+            404
+        );
     }
 
     /**
@@ -189,16 +207,28 @@ class TicketController extends Controller
      */
 
     public function findAll()
-    {// Recuperando todos os Tcikets
+    { // Recuperando todos os Tcikets
 
         $ticket = Ticket::all();
 
         if ($ticket) {
-            return $ticket;
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'data' => $ticket,
+                ],
+                200
+            );
         }
-        
+
         // Mensagem de erro
-        return response()->json(['message' => 'Ticket not found'], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Ticket not found'
+            ],
+            404
+        );
     }
 
     /**
@@ -238,7 +268,7 @@ class TicketController extends Controller
      */
 
     public function findById(Request $request)
-    {// Recuperando um Ticket pelo ID
+    { // Recuperando um Ticket pelo ID
         // Validando o input da requisição
         $request->validate([
             'id' => 'required'
@@ -248,11 +278,23 @@ class TicketController extends Controller
         $ticket = Ticket::find($request->input('id'));
 
         if ($ticket) {
-            return $ticket;
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'data' => $ticket,
+                ],
+                200
+            );
         }
 
         // Mensagem de erro
-        return response()->json(['message' => 'Ticket not found'], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Ticket not found'
+            ],
+            404
+        );
     }
 
     /**
@@ -287,7 +329,7 @@ class TicketController extends Controller
      */
 
     public function deleteById(Request $request)
-    {// SoftDelete de um Ticket pelo ID
+    { // SoftDelete de um Ticket pelo ID
         // Validando o input da requisição
         $request->validate([
             'id' => 'required'
@@ -295,15 +337,27 @@ class TicketController extends Controller
 
         // Recuperando o Ticket Solicitado
         $ticket = Ticket::find($request->input('id'));
-        
+
         // Deletando o Ticket
         if ($ticket) {
             $ticket->delete();
-            return response()->json(['message' => 'Ticket deleted'], 200);
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'message' => 'Ticket deleted'
+                ],
+                200
+            );
         }
 
         // Mensagem de erro
-        return response()->json(['message' => 'Ticket not found'], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Ticket not found'
+            ],
+            404
+        );
     }
 
     /**
@@ -338,7 +392,7 @@ class TicketController extends Controller
      */
 
     public function restoreById(Request $request)
-    {// Restaurando o Tikcet SoftDelete pelo ID
+    { // Restaurando o Tikcet SoftDelete pelo ID
         // Valindao o input da requisição
         $request->validate([
             'id' => 'required|exists:tickets,id',
@@ -351,10 +405,22 @@ class TicketController extends Controller
         if ($ticket) {
             $ticket->restore();
 
-            return response()->json(['message' => 'Service restored successfully'], 200);
+            return response()->json(
+                [
+                    'sucess' => true,
+                    'message' => 'Service restored successfully'
+                ],
+                200
+            );
         }
 
         // Mensagem de erro
-        return response()->json(['message' => 'Service not found'], 404);
+        return response()->json(
+            [
+                'sucess' => false,
+                'message' => 'Service not found'
+            ],
+            404
+        );
     }
 }
