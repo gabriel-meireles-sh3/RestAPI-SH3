@@ -54,7 +54,8 @@ class TicketController extends Controller
      */
 
     public function create(Request $request)
-    { // create ticket
+    { // Criando um ticket
+        // Validando o input da requisição
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'client' => 'required',
@@ -65,6 +66,7 @@ class TicketController extends Controller
             return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 422);
         }
 
+        // Criando o ticket
         $ticket = Ticket::create([
             'name' => $request->input('name'),
             'client' => $request->input('client'),
@@ -124,7 +126,8 @@ class TicketController extends Controller
      */
 
     public function update(Request $request)
-    {
+    {// Editando um Ticket
+        // Validando o input da requisição
         $validator = Validator::make($request->all(), [
             'id' => 'required',
             'name' => 'required',
@@ -136,8 +139,10 @@ class TicketController extends Controller
             return response()->json(['message' => 'Validation error', 'errors' => $validator->errors()], 422);
         }
 
+        // Recuperando o Ticket a ser editado
         $ticket = Ticket::find($request->input('id'));
 
+        // Editando o ticket e salvando
         if ($ticket) {
             $ticket->name = $request->input('name');
             $ticket->client = $request->input('client');
@@ -147,6 +152,7 @@ class TicketController extends Controller
             return $ticket;
         }
 
+        // Mensagem de erro
         return response()->json(['message' => 'Ticket not found'], 404);
     }
 
@@ -183,12 +189,15 @@ class TicketController extends Controller
      */
 
     public function findAll()
-    {
+    {// Recuperando todos os Tcikets
+
         $ticket = Ticket::all();
 
         if ($ticket) {
             return $ticket;
         }
+        
+        // Mensagem de erro
         return response()->json(['message' => 'Ticket not found'], 404);
     }
 
@@ -229,16 +238,20 @@ class TicketController extends Controller
      */
 
     public function findById(Request $request)
-    {
+    {// Recuperando um Ticket pelo ID
+        // Validando o input da requisição
         $request->validate([
             'id' => 'required'
         ]);
 
+        // Recuperando o Ticket solicitado
         $ticket = Ticket::find($request->input('id'));
 
         if ($ticket) {
             return $ticket;
         }
+
+        // Mensagem de erro
         return response()->json(['message' => 'Ticket not found'], 404);
     }
 
@@ -274,16 +287,22 @@ class TicketController extends Controller
      */
 
     public function deleteById(Request $request)
-    {
+    {// SoftDelete de um Ticket pelo ID
+        // Validando o input da requisição
         $request->validate([
             'id' => 'required'
         ]);
 
+        // Recuperando o Ticket Solicitado
         $ticket = Ticket::find($request->input('id'));
+        
+        // Deletando o Ticket
         if ($ticket) {
             $ticket->delete();
             return response()->json(['message' => 'Ticket deleted'], 200);
         }
+
+        // Mensagem de erro
         return response()->json(['message' => 'Ticket not found'], 404);
     }
 
@@ -319,19 +338,23 @@ class TicketController extends Controller
      */
 
     public function restoreById(Request $request)
-    {
+    {// Restaurando o Tikcet SoftDelete pelo ID
+        // Valindao o input da requisição
         $request->validate([
             'id' => 'required|exists:tickets,id',
         ]);
 
+        // Recuperando o Ticket solicitado da lista de softdelete
         $ticket = Ticket::withTrashed()->find($request->id);
 
+        // Restaurando o Ticket
         if ($ticket) {
             $ticket->restore();
 
             return response()->json(['message' => 'Service restored successfully'], 200);
         }
 
+        // Mensagem de erro
         return response()->json(['message' => 'Service not found'], 404);
     }
 }

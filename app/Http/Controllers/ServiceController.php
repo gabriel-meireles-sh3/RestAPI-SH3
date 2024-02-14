@@ -51,7 +51,8 @@ class ServiceController extends Controller
      */
 
     public function create(Request $request)
-    { // create service
+    { // Criando o Serviço
+        // Validando o input da requisição
         $request->validate([
             'requester_name' => 'required',
             'client_id' => 'required',
@@ -59,6 +60,7 @@ class ServiceController extends Controller
             'support_id' => 'nullable',
         ]);
 
+        // criando o novo serviço
         $service = Service::create([
             'requester_name' => $request->input('requester_name'),
             'client_id' => $request->input('client_id'),
@@ -66,6 +68,7 @@ class ServiceController extends Controller
             'support_id' => $request->input('support_id'),
         ]);
 
+        // retornando o serviço
         return $service;
     }
 
@@ -116,7 +119,8 @@ class ServiceController extends Controller
      */
 
     public function update(Request $request)
-    {
+    {// Editando o Serviço
+        // Validando o input da requisição
         $request->validate([
             'service_id' => 'required',
             'requester_name' => 'required',
@@ -125,18 +129,22 @@ class ServiceController extends Controller
             'support_id' => 'nullable',
         ]);
 
+        // Procurando o serviço a ser odificado
         $service = Service::find($request->input('service_id'));
 
+        // Certificando que o serviço foi achado e não está em estado de SoftDelete
         if ($service && !$service->deleted_at !== NULL) {
             $service->requester_name = $request->input('requester_name');
             $service->client_id = $request->input('client_id');
             $service->service_area = $request->input('service_area');
             $service->support_id = $request->input('support_id');
 
+            // Após as modificações, salvando o serviço
             $service->save();
             return $service;
         }
 
+        //mensagem de erro
         return response()->json(['message' => 'Service not found'], 404);
     }
 
@@ -169,9 +177,11 @@ class ServiceController extends Controller
      */
 
     public function findAll()
-    {
+    {// Retornar todos os serviços
+        // Recuperando todos os serviços
         $services = Service::all();
 
+        // Certificando que existem serviços
         if ($services) {
             return $services;
         }
@@ -215,11 +225,13 @@ class ServiceController extends Controller
      */
 
     public function findById(Request $request)
-    {
+    {// Recuperando o servuço pelo ID
+        // Validando o input da requisição
         $request->validate([
             'id' => 'required'
         ]);
 
+        // Recuperando o serviço solicitado
         $service = Service::find($request->input('id'));
 
         return $service;
@@ -255,17 +267,22 @@ class ServiceController extends Controller
 
 
     public function deleteById(Request $request)
-    {
+    {// SoftDelete do serviço pelo ID
+        // Validando o input da requisição
         $request->validate([
             'id' => 'required'
         ]);
 
+        // Recuperando o serviço solicitado
         $service = Service::find($request->input('id'));
+
+        // Certificando que o serviço existe e deletando
         if ($service) {
             $service->delete();
             return response()->json(['message' => 'Service deleted'], 200);
         }
 
+        // Mesangem de erro
         return response()->json(['message' => 'Service not found'], 404);
     }
 
@@ -301,19 +318,23 @@ class ServiceController extends Controller
      * )
      */
     public function restoreById(Request $request)
-    {
+    {// Restaurando o serviço SoftDelete pelo id
+        // Validando o input da requisição
         $request->validate([
             'id' => 'required|exists:services,id',
         ]);
 
+        // Recuperando o serviço deletado
         $service = Service::withTrashed()->find($request->id);
 
+        // Certificando que o serviço existem e restaurando
         if ($service) {
             $service->restore();
 
             return response()->json(['message' => 'Service restored successfully'], 200);
         }
 
+        // Mensagem de erro
         return response()->json(['message' => 'Service not found'], 404);
     }
 
@@ -354,13 +375,16 @@ class ServiceController extends Controller
      */
 
     public function findBySupportId(Request $request)
-    {
+    {// Recuperand o serviço pelo ID de analista de suporte
+        // Validando o input da requisição
         $request->validate([
             'support_id' => 'required'
         ]);
 
+        // Recuperando os serviços onde o ID do analista de suporte seja o solicitado
         $service = Service::where('support_id', $request->input('support_id'))->get();
 
+        // retornando a lista
         return $service;
     }
 
@@ -400,11 +424,13 @@ class ServiceController extends Controller
      */
 
     public function findByTicketId(Request $request)
-    {
+    {// Recuperando os serviços pelo ID da solicitação
+        // Validando o input da requisição
         $request->validate([
             'ticket_id' => 'required'
         ]);
 
+        // Recuperando os serviços onde o ID da solicitação seja o solicitado
         $service = Service::where('client_id', $request->input('ticket_id'))->get();
 
         return $service;
@@ -452,22 +478,25 @@ class ServiceController extends Controller
      */
 
     public function associateService(Request $request)
-    {
+    {// Associando o Serviço à um analista de suporte
         $request->validate([
             'id' => 'required'
         ]);
 
+        // Recuperando o serviço e o usuário solicitante
         $service = Service::find($request->input('id'));
         $user = $request->user();
 
-        // Retrieve all support records for the user
+        // Recuperando o perfil suporte do usuário
         $supports = $user->support;
 
+        // Função para verificar a ocorrencia de área de atuação do analista de suporte ser igual à
+        // área de atendimento solicitada no serviço
         $matchingSupport = $supports->first(function ($support) use ($service) {
             return $support->service_area === $service->service_area;
         });
 
-        // If a matching support is found, associate the service with that support
+        // Se esse analista atender à área então ele é associado ao serviço para responde-lo
         if ($matchingSupport) {
             $service->support_id = $matchingSupport->id;
             $service->save();
@@ -475,6 +504,7 @@ class ServiceController extends Controller
             return $service;
         }
 
+        // Mensagem de erro
         return response()->json([
             'message' => 'There is already an analyst responding to this service or the service area does not match any support.'
         ]);
@@ -505,13 +535,16 @@ class ServiceController extends Controller
      * )
      */
 
-    public function servicesArea(Request $request)
-    {
+    public function servicesArea()
+    {// Recuperando todas as áreas de serviço
         $services_areas = Service::select('service_area')->get();
 
+        // Certificando que existem
         if ($services_areas) {
             return $services_areas;
         }
+
+        // Mensagem de erro
         return response()->json(['message' => 'Services areas not found'], 404);
     }
 
@@ -541,13 +574,15 @@ class ServiceController extends Controller
      */
 
 
-    public function servicesTypes(Request $request)
-    {
+    public function servicesTypes()
+    {// Recuperando os tipos de atencimentos realizados
         $services_type = Service::select('service')->get();
 
         if ($services_type && !empty($services_type)) {
             return $services_type;
         }
+
+        // Mensagem de erro
         return response()->json(['message' => 'Services types not found'], 404);
     }
 
@@ -582,14 +617,15 @@ class ServiceController extends Controller
      * )
      */
 
-    public function unassociateServices(Request $request)
-    {
+    public function unassociateServices()
+    {// Recuperando os Serviços sem atendimento
         $service = Service::where('support_id', NULL)->get();
 
         if ($service && count($service) > 0) {
             return $service;
         }
 
+        // mensagem de erro
         return response()->json(['message' => 'Services not found'], 404);
     }
 
@@ -631,19 +667,23 @@ class ServiceController extends Controller
      */
 
     public function completeService(Request $request)
-    {
+    {// Concluir o atendimento e fechar a ordem de serviço
+        // Validando o input da requisição
         $request->validate([
             'status' => 'required',
             'service' => 'required',
         ]);
 
+        // Recuperando o Serviço e o Usuário solicitante
         $service = Service::find($request->input('id'));
         $supports = $request->user()->support;
 
+        // Verificando se esse usuário é o responsável pelo serviço
         $matchingSupport = $supports->first(function ($support) use ($service) {
             return $support->id === $service->support_id;
         });
 
+        // Fechando o Serviço
         if ($service && $matchingSupport) {
             $service->status = $request->input('status');
             $service->service = $request->input('service');
@@ -652,6 +692,7 @@ class ServiceController extends Controller
             return $service;
         }
 
+        // Mensagem de erro
         return response()->json(['message' => 'Service not found or not belonging to the user'], 404);
     }
 
@@ -683,14 +724,15 @@ class ServiceController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function incompletedServices(Request $request)
-    {
+    public function incompletedServices()
+    {// Recuperando os Serviços em aberto
         $services = Service::where('status', false)->get();
 
         if ($services && count($services) > 0) {
             return $services;
         }
 
+        // Mensagem de erro
         return response()->json([
             'message' => 'No incomplete Services found'
         ], 404);
@@ -724,8 +766,8 @@ class ServiceController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function completedServices(Request $request)
-    {
+    public function completedServices()
+    {// Recuperando os Serviços respondidos
         $services = Service::where('status', true)->get();
 
         if ($services && count($services) > 0) {

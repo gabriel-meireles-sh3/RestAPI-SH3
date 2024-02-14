@@ -45,7 +45,7 @@ class AuthController extends Controller
 
     public function signIn(Request $request) // Login
     {
-        // Validate user input
+        // Validando o input da requisição
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -53,7 +53,7 @@ class AuthController extends Controller
 
         $credentials = $request->only('email', 'password');
         if ($token = auth()->attempt($credentials)) {
-            // Authentication sucess
+            // Sucesso na autenticação
             return response()->json(['token' => $token], 200);
         }
 
@@ -98,7 +98,7 @@ class AuthController extends Controller
     {
         DB::beginTransaction();
 
-        // Validate user input
+        // Validando o input da requisição
         $request->validate([
             'name' => 'required',
             'email' => 'required|email',
@@ -107,7 +107,7 @@ class AuthController extends Controller
             'service_area' => 'nullable',
         ]);
 
-        // Create new user
+        // Criando um novo usuário
         $user = User::create([
             "name" => $request->input("name"),
             "email" => $request->input("email"),
@@ -142,12 +142,14 @@ class AuthController extends Controller
                     ['message' => "Create Error"]
                 );
             }
-        } else if ($user) {
+        } else if ($user) { // usuário não analista de suporte
+            // Criado, então sucesso
             DB::commit();
             return response()->json(
                 ['message' => $user]
             );
         } else {
+            // Qualquer outro, erro de criação
             return response()->json(
                 ['message' => "Create Error"]
             );
@@ -188,9 +190,9 @@ class AuthController extends Controller
      * )
      */
 
-    public function logout(Request $request)
+    public function logout()
     { // logout
-
+        // Retirando a autenticação
         Auth::logout();
 
         return response()->json(
@@ -230,15 +232,18 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function findAllSupport(Request $request)
+    public function findAllSupport()
     {
+        // Recuperando os usuários analistas de suporte
         $users = User::where('role', User::ROLE_SUPPORT)->get();
 
         if ($users && count($users) > 0) {
+            // Carregando seus serviços
             $users->load('support.ticket_services');
             return $users;
         }
 
+        // Mensagem de Erro
         return response()->json([
             'message' => 'Support users not found'
         ], 404);
@@ -277,22 +282,26 @@ class AuthController extends Controller
 
     public function findAvailableSupport(Request $request)
     {
+        // Recuperando os usuários analistas de suporte
         $users = User::where('role', User::ROLE_SUPPORT)->get();
 
         if ($users && count($users) > 0) {
             $users->load('support.ticket_services');
 
+            // Criando a função para excluir usuários que possuam serviços com status = false (em andamento).
             $availableSupportUsers = $users->reject(function ($user) {
                 return $user->support->contains(function ($support) {
                     return $support->ticket_services->contains('status', false);
                 });
             });
 
+            // Retornando a lista se não vazia
             if ($availableSupportUsers->isNotEmpty()) {
                 return $availableSupportUsers;
             }
         }
 
+        // Mensagem de erro
         return response()->json([
             'message' => 'No available support analyst'
         ], 404);
