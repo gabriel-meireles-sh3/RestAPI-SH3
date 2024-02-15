@@ -5,14 +5,11 @@ namespace Tests\Feature;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class TicketControllerTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
+    
     use RefreshDatabase;
 
     public function testCreateTicket()
@@ -29,9 +26,12 @@ class TicketControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJson([
-            'name' => $ticketData['name'],
-            'client' => $ticketData['client'],
-            'occupation_area' => $ticketData['occupation_area'],
+            'success' => true,
+            'data' => [
+                'name' => $ticketData['name'],
+                'client' => $ticketData['client'],
+                'occupation_area' => $ticketData['occupation_area'],
+            ],
         ]);
         $this->assertDatabaseHas('tickets', $ticketData);
     }
@@ -51,10 +51,13 @@ class TicketControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'id' => $updatedTicketData['id'],
-            'name' => $updatedTicketData['name'],
-            'client' => $updatedTicketData['client'],
-            'occupation_area' => $updatedTicketData['occupation_area'],
+            'success' => true,
+            'data' => [
+                'id' => $updatedTicketData['id'],
+                'name' => $updatedTicketData['name'],
+                'client' => $updatedTicketData['client'],
+                'occupation_area' => $updatedTicketData['occupation_area'],
+            ],
         ]);
         $this->assertDatabaseHas('tickets', $updatedTicketData);
     }
@@ -67,7 +70,10 @@ class TicketControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => ['id', 'name', 'client', 'occupation_area', 'created_at', 'updated_at'],
+            'success',
+            'data' => [
+                '*' => ['id', 'name', 'client', 'occupation_area', 'created_at', 'updated_at'],
+            ],
         ]);
     }
 
@@ -79,13 +85,19 @@ class TicketControllerTest extends TestCase
         $response = $this->actingAs($user)->get('/api/getTicket?id=' . $ticket->id);
         $response->assertStatus(200);
         $response->assertJson([
-            'id' => $ticket->id,
-            'name' => $ticket->name,
-            'client' => $ticket->client,
-            'occupation_area' => $ticket->occupation_area,
+            'success' => true,
+            'data' => [
+                'id' => $ticket->id,
+                'name' => $ticket->name,
+                'client' => $ticket->client,
+                'occupation_area' => $ticket->occupation_area,
+            ],
         ]);
         $response->assertJsonStructure([
-            'id', 'name', 'client', 'occupation_area', 'created_at', 'updated_at',
+            'success',
+            'data' => [
+                'id', 'name', 'client', 'occupation_area', 'created_at', 'updated_at',
+            ],
         ]);
     }
 
@@ -111,7 +123,7 @@ class TicketControllerTest extends TestCase
     public function testDeleteTicketByInvalidId()
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
-        
+
         $response = $this->actingAs($user)->deleteJson('/api/deleteTicket', ['id' => 999]);
         $response->assertStatus(404);
         $response->assertJson(['message' => 'Ticket not found']);
@@ -126,7 +138,7 @@ class TicketControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post('/api/restoreTicket', ['id' => $id]);
 
-        $response->assertStatus(200);  
+        $response->assertStatus(200);
         $restoredTicket = Ticket::withTrashed()->find($ticket->id);
         $this->assertNotNull($restoredTicket);
         $this->assertNull($restoredTicket->deleted_at);

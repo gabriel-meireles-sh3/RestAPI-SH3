@@ -3,19 +3,14 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\Support;
 use App\Models\Ticket;
-use Tymon\JWTAuth\Support\RefreshFlow;
 
 class AuthControllerTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
 
     use RefreshDatabase;
 
@@ -56,8 +51,8 @@ class AuthControllerTest extends TestCase
             'role' => 4,
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure(['message']);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['success','data']);
     }
 
     public function testSignUpWithInvalidData()
@@ -80,7 +75,7 @@ class AuthControllerTest extends TestCase
 
         $response = $this->withHeader('Authorization', "Bearer $token")->postJson('/api/logout');
 
-        $response->assertStatus(302);
+        $response->assertStatus(200);
     }
 
     public function testFindAvailableSupportWithAvailableSupport()
@@ -92,30 +87,33 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'name',
-                'email',
-                'role',
-                'created_at',
-                'updated_at',
-                'support' => [
-                    '*' => [
-                        'id',
-                        'user_id',
-                        'service_area',
-                        'created_at',
-                        'updated_at',
-                        'ticket_services' => [
-                            '*' => [
-                                'id',
-                                'requester_name',
-                                'client_id',
-                                'service_area',
-                                'support_id',
-                                'status',
-                                'created_at',
-                                'updated_at',
+            'success',
+            'data' => [
+                '*' => [
+                    'id',
+                    'name',
+                    'email',
+                    'role',
+                    'created_at',
+                    'updated_at',
+                    'support' => [
+                        '*' => [
+                            'id',
+                            'user_id',
+                            'service_area',
+                            'created_at',
+                            'updated_at',
+                            'ticket_services' => [
+                                '*' => [
+                                    'id',
+                                    'requester_name',
+                                    'client_id',
+                                    'service_area',
+                                    'support_id',
+                                    'status',
+                                    'created_at',
+                                    'updated_at',
+                                ],
                             ],
                         ],
                     ],
@@ -135,7 +133,9 @@ class AuthControllerTest extends TestCase
         $response = $this->actingAs($user)->json('GET', '/api/getAvailableSupport');
 
         $response->assertStatus(404);
-        $response->assertJson(['message' => 'No available support analyst']);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'No available support analyst']);
     }
 
     public function testFindAllSupport()

@@ -56,7 +56,7 @@ class AuthController extends Controller
             // Sucesso na autenticação
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'token' => $token,
                 ],
                 200
@@ -65,7 +65,7 @@ class AuthController extends Controller
 
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'error' => 'Invalid credentials, email or password incorrect.'
             ],
             401
@@ -146,7 +146,7 @@ class AuthController extends Controller
                 DB::commit();
                 return response()->json(
                     [
-                        'sucess' => true,
+                        'success' => true,
                         'data' => $user
                     ],
                     200
@@ -156,18 +156,18 @@ class AuthController extends Controller
                 DB::rollBack();
                 return response()->json(
                     [
-                        'sucess' => false,
+                        'success' => false,
                         'message' => "Create Error"
                     ],
                     400
                 );
             }
         } else if ($user) { // usuário não analista de suporte
-            // Criado, então sucesso
+            // Criado, então successo
             DB::commit();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $user
                 ],
                 201
@@ -176,7 +176,7 @@ class AuthController extends Controller
             // Qualquer outro, erro de criação
             return response()->json(
                 [
-                    'sucess' => false,
+                    'success' => false,
                     'message' => "Create Error"
                 ],
                 400
@@ -192,7 +192,7 @@ class AuthController extends Controller
      *      tags={"Authentication"},
      *      security={{"bearer_token":{}}},
      *      @OA\Response(
-     *          response=302,
+     *          response=200,
      *          description="Redirects to the home page after successful logout",
      *          @OA\JsonContent(
      *              type="object",
@@ -225,10 +225,10 @@ class AuthController extends Controller
 
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'message' => "Logout Sucess"
             ],
-            302
+            200
         );
     }
 
@@ -273,17 +273,17 @@ class AuthController extends Controller
             $users->load('support.ticket_services');
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $users,
                 ],
-                302
+                200
             );
         }
 
         // Mensagem de Erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Support users not found'
             ],
             404
@@ -340,10 +340,10 @@ class AuthController extends Controller
             if ($availableSupportUsers->isNotEmpty()) {
                 return response()->json(
                     [
-                        'sucess' => true,
+                        'success' => true,
                         'data' => $availableSupportUsers,
                     ],
-                    302
+                    200
                 );
             }
         }
@@ -351,7 +351,7 @@ class AuthController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'No available support analyst'
             ],
             404

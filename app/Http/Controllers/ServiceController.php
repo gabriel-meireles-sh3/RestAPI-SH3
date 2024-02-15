@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 use App\Models\Service;
 
@@ -71,7 +69,7 @@ class ServiceController extends Controller
         // retornando o serviço
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'data' => $service,
             ],
             201
@@ -149,7 +147,7 @@ class ServiceController extends Controller
             $service->save();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $service,
                 ],
                 200
@@ -159,7 +157,7 @@ class ServiceController extends Controller
         //mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Service not found'
             ],
             404
@@ -203,7 +201,7 @@ class ServiceController extends Controller
         if ($services) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $services,
                 ],
                 200
@@ -212,7 +210,7 @@ class ServiceController extends Controller
 
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Services not found'
             ],
             404
@@ -266,7 +264,7 @@ class ServiceController extends Controller
 
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'data' => $service,
             ],
             200
@@ -317,7 +315,7 @@ class ServiceController extends Controller
             $service->delete();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'message' => 'Service deleted'
                 ],
                 200
@@ -327,7 +325,7 @@ class ServiceController extends Controller
         // Mesangem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Service not found'
             ],
             404
@@ -381,7 +379,7 @@ class ServiceController extends Controller
 
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'message' => 'Service restored successfully'
                 ],
                 200
@@ -391,7 +389,7 @@ class ServiceController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Service not found'
             ],
             404
@@ -447,7 +445,7 @@ class ServiceController extends Controller
         // retornando a lista
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'data' => $service,
             ],
             200
@@ -501,7 +499,7 @@ class ServiceController extends Controller
 
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'data' => $service,
             ],
             200
@@ -575,7 +573,7 @@ class ServiceController extends Controller
 
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $service,
                 ],
                 200
@@ -585,7 +583,7 @@ class ServiceController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'There is already an analyst responding to this service or the service area does not match any support.'
             ],
             400
@@ -625,7 +623,7 @@ class ServiceController extends Controller
         if ($services_areas) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $services_areas,
                 ],
                 200
@@ -635,7 +633,7 @@ class ServiceController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Services areas not found'
             ],
             404
@@ -675,7 +673,7 @@ class ServiceController extends Controller
         if ($services_type && !empty($services_type)) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $services_type,
                 ],
                 200
@@ -685,7 +683,7 @@ class ServiceController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Services types not found'
             ],
             404
@@ -725,25 +723,25 @@ class ServiceController extends Controller
 
     public function unassociateServices()
     { // Recuperando os Serviços sem atendimento
-        $service = Service::where('support_id', NULL)->get();
+        $services = Service::whereNull('support_id')->get();
 
-        if ($service && count($service) > 0) {
+        if ($services->isEmpty()) {
+            // mensagem de erro
             return response()->json(
                 [
-                    'sucess' => true,
-                    'data' => $service,
+                    'success' => false,
+                    'message' => 'Services not found'
                 ],
-                200
+                404
             );
         }
 
-        // mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
-                'message' => 'Services not found'
+                'success' => true,
+                'data' => $services,
             ],
-            404
+            200
         );
     }
 
@@ -809,7 +807,7 @@ class ServiceController extends Controller
             $service->save();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $service,
                 ],
                 200
@@ -819,7 +817,7 @@ class ServiceController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Service not found or not belonging to the user'
             ],
             404
@@ -858,24 +856,18 @@ class ServiceController extends Controller
     { // Recuperando os Serviços em aberto
         $services = Service::where('status', false)->get();
 
-        if ($services && count($services) > 0) {
-            return response()->json(
-                [
-                    'sucess' => true,
-                    'data' => $services,
-                ],
-                200
-            );
+        if ($services->isEmpty()) {
+            // Mensagem de erro
+            return response()->json([
+                'success' => false,
+                'message' => 'No incomplete Services found'
+            ], 404);
         }
 
-        // Mensagem de erro
-        return response()->json(
-            [
-                'sucess' => false,
-                'message' => 'No incomplete Services found'
-            ],
-            404
-        );
+        return response()->json([
+            'success' => true,
+            'data' => $services,
+        ], 200);
     }
 
     /**
@@ -913,7 +905,7 @@ class ServiceController extends Controller
         if ($services && count($services) > 0) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $services,
                 ],
                 200
@@ -922,7 +914,7 @@ class ServiceController extends Controller
 
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'No completed Services found'
             ],
             404

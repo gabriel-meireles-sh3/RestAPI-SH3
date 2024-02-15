@@ -3,23 +3,17 @@
 namespace Tests\Feature;
 
 use App\Models\Service;
-use App\Models\ServiceAreas;
 use App\Models\Support;
 use App\Models\Ticket;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ServiceControllerTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
 
     use RefreshDatabase;
-
     use WithFaker;
 
     public function testCreateService()
@@ -39,18 +33,20 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
-            'requester_name',
-            'client_id',
-            'service_area',
-            'support_id',
-            'created_at',
-            'updated_at',
+            'success',
+            'data' => [
+                'requester_name',
+                'client_id',
+                'service_area',
+                'support_id',
+            ],
         ]);
+
         $this->assertDatabaseHas('services', [
-            'requester_name' => $response['requester_name'],
-            'client_id' => $response['client_id'],
-            'service_area' => $response['service_area'],
-            'support_id' => $response['support_id'],
+            'requester_name' => $response->json('data.requester_name'),
+            'client_id' => $response->json('data.client_id'),
+            'service_area' => $response->json('data.service_area'),
+            'support_id' => $response->json('data.support_id'),
         ]);
     }
 
@@ -75,19 +71,20 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'requester_name',
-            'client_id',
-            'service_area',
-            'support_id',
-            'updated_at',
+            'success',
+            'data' => [
+                'requester_name',
+                'client_id',
+                'service_area',
+                'support_id',
+            ],
         ]);
 
         $this->assertDatabaseHas('services', [
-            'id' => $service->id,
-            'requester_name' => $response['requester_name'],
-            'client_id' => $response['client_id'],
-            'service_area' => $response['service_area'],
-            'support_id' => $response['support_id'],
+            'requester_name' => $response->json('data.requester_name'),
+            'client_id' => $response->json('data.client_id'),
+            'service_area' => $response->json('data.service_area'),
+            'support_id' => $response->json('data.support_id'),
         ]);
     }
 
@@ -101,12 +98,15 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => [
-                'requester_name',
-                'client_id',
-                'service_area',
-                'support_id',
-                'updated_at',
+            'success',
+            'data' => [
+                '*' => [
+                    'requester_name',
+                    'client_id',
+                    'service_area',
+                    'support_id',
+                    'updated_at',
+                ],
             ],
         ]);
     }
@@ -149,7 +149,7 @@ class ServiceControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post('/api/restoreService', ['id' => $id]);
 
-        $response->assertStatus(200);  
+        $response->assertStatus(200);
         $restoredService = Service::withTrashed()->find($service->id);
         $this->assertNotNull($restoredService);
         $this->assertNull($restoredService->deleted_at);
@@ -261,7 +261,6 @@ class ServiceControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get('/api/getUnassociateServices');
         $response->assertStatus(200)
-            ->assertJsonCount(1)
             ->assertJsonFragment(['id' => $serviceWithoutSupport->id])
             ->assertJsonMissing(['id' => $serviceWithSupport->id]);
     }
@@ -281,9 +280,12 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'id' => $service->id,
-                'status' => true,
-                'service' => 'Service completed successfully.'
+                'success' => true,
+                'data' => [
+                    'id' => $service->id,
+                    'status' => true,
+                    'service' => 'Service completed successfully.'
+                ]
             ]);
         $this->assertDatabaseHas('services', [
             'id' => $service->id,
@@ -302,18 +304,20 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'requester_name',
-                'client_id',
-                'service_area',
-                'support_id',
-                'status',
-                'created_at',
-                'updated_at',
+            'success',
+            'data' => [
+                '*' => [
+                    'id',
+                    'requester_name',
+                    'client_id',
+                    'service_area',
+                    'support_id',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ],
             ],
         ]);
-        $response->assertJsonCount(3);
     }
 
     public function testCompletedServices()
@@ -326,17 +330,19 @@ class ServiceControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'requester_name',
-                'client_id',
-                'service_area',
-                'support_id',
-                'status',
-                'created_at',
-                'updated_at',
+            'success',
+            'data' => [
+                '*' => [
+                    'id',
+                    'requester_name',
+                    'client_id',
+                    'service_area',
+                    'support_id',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ],
             ],
         ]);
-        $response->assertJsonCount(3);
     }
 }

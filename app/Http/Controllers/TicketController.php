@@ -75,10 +75,10 @@ class TicketController extends Controller
 
         return response()->json(
             [
-                'sucess' => true,
+                'success' => true,
                 'data' => $ticket,
             ],
-            200
+            201
         );
     }
 
@@ -157,7 +157,7 @@ class TicketController extends Controller
             $ticket->save();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $ticket,
                 ],
                 200
@@ -167,7 +167,7 @@ class TicketController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Ticket not found'
             ],
             404
@@ -214,7 +214,7 @@ class TicketController extends Controller
         if ($ticket) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $ticket,
                 ],
                 200
@@ -224,7 +224,7 @@ class TicketController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Ticket not found'
             ],
             404
@@ -280,7 +280,7 @@ class TicketController extends Controller
         if ($ticket) {
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'data' => $ticket,
                 ],
                 200
@@ -290,7 +290,7 @@ class TicketController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Ticket not found'
             ],
             404
@@ -343,7 +343,7 @@ class TicketController extends Controller
             $ticket->delete();
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'message' => 'Ticket deleted'
                 ],
                 200
@@ -353,7 +353,7 @@ class TicketController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Ticket not found'
             ],
             404
@@ -407,7 +407,7 @@ class TicketController extends Controller
 
             return response()->json(
                 [
-                    'sucess' => true,
+                    'success' => true,
                     'message' => 'Service restored successfully'
                 ],
                 200
@@ -417,7 +417,7 @@ class TicketController extends Controller
         // Mensagem de erro
         return response()->json(
             [
-                'sucess' => false,
+                'success' => false,
                 'message' => 'Service not found'
             ],
             404
