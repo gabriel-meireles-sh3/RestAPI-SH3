@@ -334,7 +334,7 @@ class ServiceController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/restoreServiceById",
+     *     path="/restoreService",
      *     summary="Restaurar um serviço excluído",
      *     description="Restaura um serviço excluído com base no ID.",
      *     tags={"Service"},

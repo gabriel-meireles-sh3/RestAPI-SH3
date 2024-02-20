@@ -780,14 +780,14 @@
                 ]
             }
         },
-        "/restoreServiceById": {
+        "/restoreService": {
             "post": {
                 "tags": [
                     "Service"
                 ],
                 "summary": "Restaurar um serviço excluído",
                 "description": "Restaura um serviço excluído com base no ID.",
-                "operationId": "f139deb773f3e243c98711de18544a00",
+                "operationId": "fdbde2a82537e338549bb99e5823a81b",
                 "requestBody": {
                     "description": "ID do serviço a ser restaurado",
                     "required": true,
@@ -1917,14 +1917,14 @@
                 ]
             }
         },
-        "/restoreTicketById": {
+        "/restoreTicket": {
             "post": {
                 "tags": [
                     "Ticket"
                 ],
                 "summary": "Restaurar um ticket excluído",
                 "description": "Restaura um ticket excluído com base no ID.",
-                "operationId": "8afefa5dfdb03e0b10717027a9787c53",
+                "operationId": "35d989e4d85963fd24fd3b2937faf284",
                 "requestBody": {
                     "description": "ID do ticket a ser restaurado",
                     "required": true,

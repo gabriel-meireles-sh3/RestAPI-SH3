@@ -362,7 +362,7 @@ class TicketController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/restoreTicketById",
+     *     path="/restoreTicket",
      *     summary="Restaurar um ticket excluído",
      *     description="Restaura um ticket excluído com base no ID.",
      *     tags={"Ticket"},
