@@ -175,7 +175,7 @@
                 "description": "Invalidate the user session and log out.",
                 "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
                 "responses": {
-                    "302": {
+                    "200": {
                         "description": "Redirects to the home page after successful logout",
                         "content": {
                             "application/json": {
@@ -1416,13 +1416,13 @@
                 ]
             }
         },
-        "/api/getcompletedServices": {
+        "/api/getCompletedServices": {
             "get": {
                 "tags": [
                     "Service"
                 ],
                 "summary": "Get complete services",
-                "operationId": "94ff6df90497c87d187a12e7b753eea9",
+                "operationId": "f0d9e267ea3cba9b311e3be03fbb0855",
                 "responses": {
                     "200": {
                         "description": "Successful operation",

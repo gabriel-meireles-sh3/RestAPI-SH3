@@ -872,7 +872,7 @@ class ServiceController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/getcompletedServices",
+     *     path="/api/getCompletedServices",
      *     summary="Get complete services",
      *     tags={"Service"},
      *     security={{"bearer_token":{}}},
